@@ -3,7 +3,6 @@
         <div class="crumbs">
             <el-breadcrumb separator="/">
                 <el-breadcrumb-item><i class="el-icon-menu"></i> admin</el-breadcrumb-item>
-                <el-breadcrumb-item>用户编辑</el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <div class="handle-box">
@@ -12,7 +11,7 @@
             <el-button type="primary" class="handle-del mr10" @click="deleteuser">删除</el-button>
             <el-button type="primary" class="handle-del mr10" @click="delAll">批量删除</el-button>
             <el-button type="primary" class="handle-del mr10" @click="changpassword">重置密码</el-button>
-            <el-button type="primary" class="handle-del mr10" @click="changpassword">汇款</el-button>
+            <el-button type="primary" class="handle-del mr10" @click="remittance">汇款</el-button>
         </div>
         <el-table :data="tableData" border style="width: 100%" ref="multipleTable"
                   @selection-change="handleSelectionChange" @current-change="handleTableCurrentChange"
@@ -80,14 +79,14 @@
             </div>
         </el-dialog>
         <el-dialog title="汇款" :visible.sync="remittanceFormVisible">
-            <el-form :model="form">
-                <el-form-item label="活动名称" :label-width="formLabelWidth">
-                    <el-input v-model="form.name" auto-complete="off"></el-input>
+            <el-form :model="remittanceform" :rules="remittanceformrules" ref="remittanceform">
+                <el-form-item label="汇款金额" prop="amount">
+                    <el-input v-model="remittanceform.amount" auto-complete="off"></el-input>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
-                <el-button @click="dialogFormVisible = false">取 消</el-button>
-                <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+                <el-button @click="remittanceFormcancel">取 消</el-button>
+                <el-button type="primary" @click="remittanceFormconfirm">确 定</el-button>
             </div>
         </el-dialog>
     </div>
@@ -122,12 +121,19 @@
                     salesamount: '',
                     salesman: ""
                 },
-                changpasswordform: {
-                    id: null,
-                    username: "",
-                    password: "",
-                    newpassword: "",
-                    repassword: ""
+                remittanceform: {
+                    id: "",
+                    amount: ""
+                },
+                remittanceformrules: {
+                    amount: [
+                        {type: "string", required: true, message: '请输入汇款金额', trigger: 'blur'},
+                        {
+                            pattern: /^(([1-9][0-9]*)|(([0]\.\d{0,2}|[1-9][0-9]*\.\d{0,2})))$/,
+                            message: '请输入正确金额',
+                            trigger: 'blur'
+                        },
+                    ],
                 },
                 createformrules: {
                     username: [
@@ -180,9 +186,38 @@
             }
         },
         created() {
-            this.getData();
+            // this.getData();
+            this.creatform.salesamount = [
+                {
+                    id: 1,
+                    username: "aa",
+                    password: "*****************",
+                    name: "3444444444",
+                    sex: 1,
+                    mobile: 1324655555555555555,
+                    paymethod: "ffff",
+                    cardno: "13354654654",
+                    alipay: "ddfdfd",
+                    salesamount: "dfdfdfdg",
+                    salesman: "fdfdfd",
+                    date: "1997-11-11"
+                },
+                {
+                    id: 2,
+                    username: "aa",
+                    password: "*****************",
+                    name: "3444444444",
+                    sex: 1,
+                    mobile: 1324655555555555555,
+                    paymethod: "ffff",
+                    cardno: "13354654654",
+                    alipay: "ddfdfd",
+                    salesamount: "dfdfdfdg",
+                    salesman: "fdfdfd",
+                    date: "1997-11-11"
+                }
+            ]
         },
-        computed: {},
         methods: {
             handlePageCurrentChange(val) {
                 this.cur_page = val;
@@ -259,8 +294,21 @@
             },
             //新建用户取消
             createformcancel() {
+                this.creatform = {
+                    id: null,
+                    username: "",
+                    password: "",
+                    name: "",
+                    sex: "1",
+                    mobile: "",
+                    paymethod: "",
+                    cardno: "",
+                    alipay: "",
+                    salesamount: '',
+                    salesman: ""
+                };
+                this.$refs.creatform.resetFields();
                 this.creatFormVisible = false;
-                this.creatform = {};
             },
             update() {
                 const row = this.currentRow;
@@ -311,7 +359,7 @@
                     const id = row.id
                     //Todo id 删除
                     this.$message({
-                        message: '请选择需要批量删除的用户',
+                        message: '删除成功',
                         type: 'success'
                     });
                     this.getData();
@@ -321,8 +369,7 @@
                         type: 'warning'
                     });
                 }
-            },
-            changpassword() {
+            }, changpassword() {
                 const row = this.currentRow;
                 if (row) {
                     const id = row.id
@@ -338,6 +385,37 @@
                         type: 'warning'
                     });
                 }
+            },
+            remittanceFormcancel() {
+                this.remittanceform = {
+                    id: "",
+                    amount: ""
+                };
+                //TODO ajax表单
+                this.$refs.remittanceform.resetFields();
+                this.remittanceFormVisible = false;
+            },
+            remittanceFormconfirm() {
+
+                this.remittanceFormVisible = false;
+                // this.$refs[remittanceform].validate((valid) => {
+                //     if (valid) {
+                //         alert('submit!');
+                //     } else {
+                //         console.log('error submit!!');
+                //         return false;
+                //     }
+                // });
+                this.$message({
+                    message: '汇款成功',
+                    type: 'success'
+                });
+                this.$message.error('汇款失败,请稍后重试');
+            },
+            remittance() {
+                const row = this.currentRow;
+                this.remittanceform.id = row.id;
+                this.remittanceFormVisible = true;
             }
         }
     }
