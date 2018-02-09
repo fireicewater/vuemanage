@@ -6,6 +6,7 @@
             </el-breadcrumb>
         </div>
         <div class="handle-box">
+            <el-button type="primary" class="handle-del mr10" @click="searchformdialog">搜索</el-button>
             <el-button type="primary" class="handle-del mr10" @click="createformdialog">增加</el-button>
             <el-button type="primary" class="handle-del mr10" @click="update">修改</el-button>
             <el-button type="primary" class="handle-del mr10" @click="deleteuser">删除</el-button>
@@ -33,7 +34,9 @@
             <el-pagination
                 @current-change="handlePageCurrentChange"
                 layout="prev, pager, next"
-                :total="1000">
+                :total="count"
+                :page-size="15"
+            >
             </el-pagination>
         </div>
         <el-dialog title="新增用户" :visible.sync="creatFormVisible" fullscreen="true">
@@ -89,6 +92,58 @@
                 <el-button type="primary" @click="remittanceFormconfirm">确 定</el-button>
             </div>
         </el-dialog>
+        <el-dialog title="搜索" :visible.sync="searchformVisible">
+            <el-form :model="searchform" ref="seaechform" label-width="80px">
+                <el-form-item label="用户名" prop="username">
+                    <el-input v-model="searchform.username"></el-input>
+                </el-form-item>
+                <el-form-item label="姓名" prop="name">
+                    <el-input v-model="searchform.name"></el-input>
+                </el-form-item>
+                <el-form-item label="性别" prop="sex">
+                    <el-radio-group v-model="searchform.sex">
+                        <el-radio label="1">男</el-radio>
+                        <el-radio label="2">女</el-radio>
+                    </el-radio-group>
+                </el-form-item>
+                <el-form-item label="手机" prop="mobile">
+                    <el-input v-model="searchform.mobile"></el-input>
+                </el-form-item>
+                <el-form-item label="支付方式" prop="paymethod">
+                    <el-input v-model="searchform.paymethod"></el-input>
+                </el-form-item>
+                <el-form-item label="银行卡号" prop="cardno">
+                    <el-input v-model="searchform.cardno"></el-input>
+                </el-form-item>
+                <el-form-item label="支付宝" prop="alipay">
+                    <el-input v-model="searchform.alipay"></el-input>
+                </el-form-item>
+                <el-form-item label="销售金额" prop="salesamount">
+                    <el-input v-model="searchform.minsalesamount">
+                        <template slot="prepend">大于:</template>
+                    </el-input>
+                    <el-input v-model="searchform.maxsalesamount">
+                        <template slot="prepend">小于:</template>
+                    </el-input>
+                </el-form-item>
+                <el-form-item label="销售人员" prop="salesman">
+                    <el-input v-model="searchform.salesman"></el-input>
+                </el-form-item>
+                <el-form-item label="创建时间">
+                    <el-date-picker
+                        v-model="searchform.createtime"
+                        type="daterange"
+                        range-separator="至"
+                        start-placeholder="开始日期"
+                        end-placeholder="结束日期">
+                    </el-date-picker>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="searchformconfirm">搜索</el-button>
+                    <el-button type="primary" class="handle-del mr10" @click="searchformcancel">取消</el-button>
+                </el-form-item>
+            </el-form>
+        </el-dialog>
     </div>
 </template>
 
@@ -103,11 +158,13 @@
                 tableData: [],
                 //当前页
                 cur_page: 1,
+                count:0,
                 //多选数据
                 multipleSelection: [],
                 //是否显示新增表单
                 creatFormVisible: false,
                 remittanceFormVisible: false,
+                searchformVisible: false,
                 creatform: {
                     id: null,
                     username: "",
@@ -120,6 +177,20 @@
                     alipay: "",
                     salesamount: '',
                     salesman: ""
+                },
+                searchform: {
+                    username: "",
+                    password: "",
+                    name: "",
+                    sex: "",
+                    mobile: "",
+                    paymethod: "",
+                    cardno: "",
+                    alipay: "",
+                    minsalesamount: '',
+                    maxsalesamount: '',
+                    salesman: "",
+                    createtime: []
                 },
                 remittanceform: {
                     id: "",
@@ -246,9 +317,9 @@
             },
             getData() {
                 let self = this;
-                self.$axios.get(self.url, {page: self.cur_page}).then((res) => {
-                    self.tableData = res.data.list;
-                })
+                const param=this.searchform
+                param.page=this.cur_page
+//                this.$http.post("/",param)
             },
             getsex(row, column) {
                 return row.sex === 1 ? "男" : "女"
@@ -416,6 +487,24 @@
                 const row = this.currentRow;
                 this.remittanceform.id = row.id;
                 this.remittanceFormVisible = true;
+            },
+            searchformdialog() {
+                this.searchformVisible = true;
+            },
+            searchformconfirm() {
+                const searchform = this.searchform;
+                if (searchform.maxsalesamount !== "") {
+                    serchform.maxsalesamount = parseFloat(searchform.maxsalesamount)
+                }
+                if (searchform.minsalesamount !== "") {
+                    serchform.minsalesamount = parseFloat(searchform.minsalesamount)
+                }
+                this.searchform = searchform;
+                this.getData();
+                this.searchformVisible = false;
+            },
+            searchformcancel() {
+                this.searchformVisible = false;
             }
         }
     }
