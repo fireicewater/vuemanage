@@ -26,9 +26,9 @@
             <el-table-column prop="paymethod" label="支付方式" width="120"></el-table-column>
             <el-table-column prop="cardno" label="银行卡号" width="120"></el-table-column>
             <el-table-column prop="alipay" label="支付宝" width="120"></el-table-column>
-            <el-table-column prop="name" label="购买金额" width="120"></el-table-column>
+            <el-table-column prop="salesamount" label="购买金额" width="120"></el-table-column>
             <el-table-column prop="salesman" label="销售人员" width="120"></el-table-column>
-            <el-table-column prop="date" label="日期" sortable width="150"></el-table-column>
+            <el-table-column prop="createtime" label="日期" sortable width="150"></el-table-column>
         </el-table>
         <div class="pagination">
             <el-pagination
@@ -42,12 +42,21 @@
         <el-dialog title="新增用户" :visible.sync="creatFormVisible" fullscreen="true">
             <el-form :model="creatform" ref="creatform" :rules="createformrules">
                 <el-input v-model="creatform.id" type="hidden"></el-input>
-                <el-form-item label="用户名" prop="username">
-                    <el-input v-model="creatform.username"></el-input>
-                </el-form-item>
-                <el-form-item label="密码" prop="password">
-                    <el-input type="password" v-model="creatform.password"></el-input>
-                </el-form-item>
+                <template v-if="isupdate">
+                    <el-form-item label="用户名">
+                        <el-input v-model="creatform.username" :disabled="isupdate"></el-input>
+                    </el-form-item>
+                </template>
+                <template v-else>
+                    <el-form-item label="用户名" prop="username">
+                        <el-input v-model="creatform.username"></el-input>
+                    </el-form-item>
+                </template>
+                <template v-if="!isupdate">
+                    <el-form-item label="密码" prop="password">
+                        <el-input type="password" v-model="creatform.password"></el-input>
+                    </el-form-item>
+                </template>
                 <el-form-item label="姓名" prop="name">
                     <el-input v-model="creatform.name"></el-input>
                 </el-form-item>
@@ -150,10 +159,28 @@
 <script>
     export default {
         data() {
+            var validatuser = (rule, value, callback) => {
+                this.$http.get("http://localhost:9090/user/validateuser", {params: {username: value}})
+                    .then(response => {
+                        if (response.status === 200) {
+                            const code = response.body.code;
+                            if (code === 200) {
+                                callback(new Error('用户名已存在'));
+                            } else {
+                                callback();
+                            }
+                        }
+                    }, response => {
+                        if (response.status === 404) {
+                            console.log("404")
+                        }
+                    });
+            };
             return {
                 url: './static/vuetable.json',
                 //当前选中row
                 currentRow: null,
+                isupdate: false,
                 //表格数据
                 tableData: [],
                 //当前页
@@ -209,15 +236,8 @@
                 createformrules: {
                     username: [
                         {type: "string", required: true, message: '请输入用户名', trigger: 'blur'},
-                        {
-                            validator(rule, value, callback, source, options) {
-                                var errors = [];
-                                // test if email address already exists in a database
-                                // and add a validation error to the errors array if it does
-                                errors.push(new Error("用户名已存在"));
-                                callback(errors);
-                            }
-                        }
+                        {validator: validatuser, trigger: 'blur'}
+
                     ],
                     password: [
                         {type: "string", required: true, message: '请输入密码', trigger: 'blur'}
@@ -257,37 +277,7 @@
             }
         },
         created() {
-            // this.getData();
-            this.creatform.salesamount = [
-                {
-                    id: 1,
-                    username: "aa",
-                    password: "*****************",
-                    name: "3444444444",
-                    sex: 1,
-                    mobile: 1324655555555555555,
-                    paymethod: "ffff",
-                    cardno: "13354654654",
-                    alipay: "ddfdfd",
-                    salesamount: "dfdfdfdg",
-                    salesman: "fdfdfd",
-                    date: "1997-11-11"
-                },
-                {
-                    id: 2,
-                    username: "aa",
-                    password: "*****************",
-                    name: "3444444444",
-                    sex: 1,
-                    mobile: 1324655555555555555,
-                    paymethod: "ffff",
-                    cardno: "13354654654",
-                    alipay: "ddfdfd",
-                    salesamount: "dfdfdfdg",
-                    salesman: "fdfdfd",
-                    date: "1997-11-11"
-                }
-            ]
+            this.getData();
         },
         methods: {
             handlePageCurrentChange(val) {
@@ -318,50 +308,109 @@
             getData() {
                 let self = this;
                 const param=this.searchform
+                const creatime = param.createtime;
+                if (creatime.length > 0) {
+                    param.mincreatetime = creatime[0];
+                    param.maxcreatetime = creatime[1];
+                }
                 param.page=this.cur_page
-//                this.$http.post("/",param)
+                this.$http.post("http://localhost:9090/user/getuserlist", param).then(response => {
+                    // success callback
+                    if (response.status === 200) {
+                        const code = response.body.code;
+                        if (code === 200) {
+                            const data = response.body.body;
+                            this.tableData = [];
+                            this.tableData = data.list;
+                            this.cur_page = data.pageNum;
+                            this.count = data.total;
+                        }
+                        if (code === 404) {
+                            this.tableData = [];
+                            this.$message.warn("数据未找到")
+                        }
+                    }
+                }, response => {
+                    // error callback
+                    this.$message.error("服务器错误请稍后再试")
+                });
             },
             getsex(row, column) {
                 return row.sex === 1 ? "男" : "女"
             },
             //新建用户
             createformdialog() {
+                this.isupdate = false;
                 this.creatFormVisible = true;
             },
             //新建用户确认
             createformconfirm() {
-                const creat = this.creatform;
+                const creat = this.creatform
                 if (creat.id) {
-                    console.log("update");
-                    //TODO ajax 发送请求
-                    // self.$axios.post(self.url, {page: self.cur_page}).then((res) => {
-                    //     self.tableData = res.data.list;
-                    // })
-                    this.getData();
-                    this.creatFormVisible = false;
-                } else {
                     this.$refs['creatform'].validate((valid) => {
-                        console.log(valid);
                         if (valid) {
-                            alert('submit!');
+                            this.$http.put("http://localhost:9090/user/updateuser", creat).then(response => {
+                                if (response.status === 200) {
+                                    const code = response.body.code;
+                                    if (code === 200) {
+                                        this.$message({
+                                            message: '修改成功',
+                                            type: 'success'
+                                        });
+                                        this.getData();
+                                        this.$refs.creatform.resetFields();
+                                        this.creatform = {};
+                                        this.creatFormVisible = false;
+                                    }
+                                    if (code === 500) {
+                                        this.$message.error('修改失败,请稍后重试');
+                                        this.creatFormVisible = false;
+                                    }
+                                    if (code === 403) {
+                                        this.$message.error('校验未通过');
+                                    }
+                                }
+                            }, response => {
+                                this.$message.error("服务器错误请稍后再试");
+                            });
                         } else {
-                            console.log('error submit!!');
+                            this.$message.error("校验未通过");
                             return false;
                         }
                     });
-                    //TODO ajax 发送请求
-                    // self.$axios.post(self.url, {page: self.cur_page}).then((res) => {
-                    //     self.tableData = res.data.list;
-                    // })
-                    // this.getData();
-                    this.$message({
-                        message: '新增成功',
-                        type: 'success'
+                } else {
+                    this.$refs['creatform'].validate((valid) => {
+                        if (valid) {
+                            this.$http.post("http://localhost:9090/user/register", creat).then(response => {
+                                if (response.status === 200) {
+                                    const code = response.body.code;
+                                    if (code === 200) {
+                                        this.$message({
+                                            message: '新增成功',
+                                            type: 'success'
+                                        });
+                                        this.getData();
+                                        this.$refs.creatform.resetFields();
+                                        this.creatform = {};
+                                        this.creatFormVisible = false;
+                                    }
+                                    if (code === 500) {
+                                        this.$message.error('新增失败,请稍后重试');
+                                        this.creatFormVisible = false;
+                                    }
+                                    if (code === 403) {
+                                        this.$message.error('校验未通过');
+                                    }
+                                }
+                            }, response => {
+                                this.$message.error("服务器错误请稍后再试");
+                            });
+                        } else {
+                            this.$message.error("校验未通过");
+                            return false;
+                        }
                     });
-                    this.$message.error('新增失败,请稍后重试');
                 }
-                // this.creatFormVisible = false;
-                this.creatform = {};
             },
             //新建用户取消
             createformcancel() {
@@ -378,21 +427,18 @@
                     salesamount: '',
                     salesman: ""
                 };
-                this.$refs.creatform.resetFields();
                 this.creatFormVisible = false;
             },
             update() {
+                this.isupdate = true;
                 const row = this.currentRow;
                 if (row) {
+                    row.sex = row.sex.toString();
                     this.creatform = row;
                     this.creatFormVisible = true;
-                    this.$message({
-                        message: '修改成功',
-                        type: 'success'
-                    });
                 } else {
                     this.$message({
-                        message: '请选择需要批量删除的用户',
+                        message: '请选择需要修改的用户',
                         type: 'warning'
                     });
                 }
@@ -407,16 +453,27 @@
                         let row = deletets[i];
                         ids.push(row.id);
                     }
-                    console.log(ids)
-                    //TODO ajax调用删除方法
-                    this.getData();
-                    this.$message({
-                        message: '批量删除成功',
-                        type: 'success'
-                    });
+                    this.$http.post("http://localhost:9090/user/deleteusers", JSON.stringify(ids)).then(response => {
+                        const code = response.body.code;
+                        if (code === 200) {
+                            this.getData();
+                            this.$message({
+                                message: '批量删除成功',
+                                type: 'success'
+                            });
 
-                    this.$refs.multipleTable.clearSelection();
-                    // this.$message.error('批量删除失败,请稍后重试');
+                            this.$refs.multipleTable.clearSelection();
+                        }
+                        if (code === 500) {
+                            this.$message.error('删除失败,请稍后重试');
+                            this.creatFormVisible = false;
+                        }
+                        if (code === 403) {
+                            this.$message.error('没有选中用户进行删除');
+                        }
+                    }, response => {
+                        this.$message.error("服务器错误请稍后再试");
+                    })
                 } else {
                     this.$message({
                         message: '请选择需要批量删除的用户',
@@ -428,12 +485,28 @@
                 const row = this.currentRow;
                 if (row) {
                     const id = row.id
-                    //Todo id 删除
-                    this.$message({
-                        message: '删除成功',
-                        type: 'success'
-                    });
-                    this.getData();
+                    const ids = []
+                    ids.push(id);
+                    this.$http.post("http://localhost:9090/user/deleteusers", JSON.stringify(ids)).then(response => {
+                        const code = response.body.code;
+                        if (code === 200) {
+                            this.$message({
+                                message: '删除成功',
+                                type: 'success'
+                            });
+                            this.getData();
+                        }
+                        if (code === 500) {
+                            this.$message.error('删除失败,请稍后重试');
+                            this.creatFormVisible = false;
+                        }
+                        if (code === 403) {
+                            this.$message.error('没有选中用户进行删除');
+                        }
+                    }, response => {
+                        this.$message.error("服务器错误请稍后再试");
+                    })
+
                 } else {
                     this.$message({
                         message: '请选择需要删除的用户',
@@ -444,11 +517,27 @@
                 const row = this.currentRow;
                 if (row) {
                     const id = row.id
-                    //Todo id 删除
-                    this.$message({
-                        message: '重置密码成功',
-                        type: 'success'
-                    });
+                    this.$http.post("http://localhost:9090/user/resetpassword",
+                        {userid: id, password: "123456"}, {emulateJSON: true})
+                        .then(response => {
+                            const code = response.body.code;
+                            if (code === 200) {
+                                this.$message({
+                                    message: '重置成功',
+                                    type: 'success'
+                                });
+                                this.getData();
+                            }
+                            if (code === 500) {
+                                this.$message.error('重置失败,请稍后重试');
+                                this.creatFormVisible = false;
+                            }
+                            if (code === 403) {
+                                this.$message.error('没有选中用户重置');
+                            }
+                        }, response => {
+                            this.$message.error("服务器错误请稍后再试");
+                        });
                     this.getData();
                 } else {
                     this.$message({
@@ -494,10 +583,10 @@
             searchformconfirm() {
                 const searchform = this.searchform;
                 if (searchform.maxsalesamount !== "") {
-                    serchform.maxsalesamount = parseFloat(searchform.maxsalesamount)
+                    searchform.maxsalesamount = parseFloat(searchform.maxsalesamount)
                 }
                 if (searchform.minsalesamount !== "") {
-                    serchform.minsalesamount = parseFloat(searchform.minsalesamount)
+                    searchform.minsalesamount = parseFloat(searchform.minsalesamount)
                 }
                 this.searchform = searchform;
                 this.getData();
