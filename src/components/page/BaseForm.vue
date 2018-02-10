@@ -82,10 +82,11 @@
 </template>
 
 <script>
+    import auth from "../../auth"
     export default {
         data: function () {
             var validateoriginalpassword = (rule, value, callback) => {
-                this.$http.post("http://localhost:9090/user/validatpassword", {
+                this.$http.post("/user/validatpassword", {
                     userid: this.userid,
                     password: value
                 }, {emulateJSON: true})
@@ -194,7 +195,7 @@
                 this.$refs['creatform'].validate((valid) => {
                     let creat = this.creatform;
                     if (valid) {
-                        this.$http.put("http://localhost:9090/user/updateuser", creat).then(response => {
+                        this.$http.put("/user/updateuser", creat).then(response => {
                             if (response.status === 200) {
                                 let code = response.body.code;
                                 if (code === 200) {
@@ -231,7 +232,7 @@
             changpasswordconfirm() {
                 this.$refs.changpasswordform.validate((valid) => {
                     if (valid) {
-                        this.$http.post("http://localhost:9090/user/changpassword", this.changpasswordform)
+                        this.$http.post("/user/changpassword", this.changpasswordform)
                             .then(response => {
                                 let code = response.body.code;
                                 if (code === 200) {
@@ -264,7 +265,7 @@
             },
             confirmamount(index, row) {
                 let amount = row;
-                this.$http.put("http://localhost:9090/amount/updatestatus", amount)
+                this.$http.put("/amount/updatestatus", amount)
                     .then(response => {
                         let code = response.body.code;
                         if (code === 200) {
@@ -280,7 +281,7 @@
 
             },
             getData() {
-                this.$http.get("http://localhost:9090/user/getuserinfo", {
+                this.$http.get("/user/getuserinfo", {
                     params: {
                         userid: this.userid
                     }
@@ -296,7 +297,7 @@
                 })
             },
             getAmountData() {
-                this.$http.get("http://localhost:9090/amount/getAmounts", {
+                this.$http.get("/amount/getAmounts", {
                     params: {
                         userid: this.userid
                     }
@@ -319,9 +320,13 @@
             },
         },
         created() {
-            this.userid = 15
+            this.userid = sessionStorage.getItem('userid');
             this.getData();
             this.getAmountData();
+        },
+        http: {
+            root: '/root',
+            headers: auth.getAuthHeader()
         }
     }
 </script>

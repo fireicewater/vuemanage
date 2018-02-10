@@ -4,7 +4,6 @@
         <div class="user-info">
             <el-dropdown trigger="click" @command="handleCommand">
                 <span class="el-dropdown-link">
-                    <img class="user-logo" src="../../../static/img/img.jpg">
                     {{username}}
                 </span>
                 <el-dropdown-menu slot="dropdown">
@@ -23,15 +22,15 @@
         },
         computed:{
             username(){
-                let username = localStorage.getItem('ms_username');
+                let username = sessionStorage.getItem('username');
                 return username ? username : this.name;
             }
         },
         methods:{
             handleCommand(command) {
                 if(command == 'loginout'){
-                    localStorage.removeItem('ms_username')
-                    this.$router.push('/login');
+                    sessionStorage.clear();
+                    this.$router.push('/manager/login');
                 }
             }
         }

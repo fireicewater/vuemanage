@@ -157,10 +157,15 @@
 </template>
 
 <script>
+    import auth from "../../auth"
     export default {
+        http: {
+            root: '/root',
+            headers: auth.getAuthHeader()
+        },
         data() {
             var validatuser = (rule, value, callback) => {
-                this.$http.get("http://localhost:9090/user/validateuser", {params: {username: value}})
+                this.$http.get("/user/validateuser", {params: {username: value}})
                     .then(response => {
                         if (response.status === 200) {
                             let code = response.body.code;
@@ -314,7 +319,7 @@
                     param.maxcreatetime = creatime[1];
                 }
                 param.page = this.cur_page
-                this.$http.post("http://localhost:9090/user/getuserlist", param).then(response => {
+                this.$http.post("/user/getuserlist", param).then(response => {
                     // success callback
                     if (response.status === 200) {
                         let code = response.body.code;
@@ -349,7 +354,7 @@
                 if (creat.id) {
                     this.$refs['creatform'].validate((valid) => {
                         if (valid) {
-                            this.$http.put("http://localhost:9090/user/updateuser", creat).then(response => {
+                            this.$http.put("/user/updateuser", creat).then(response => {
                                 if (response.status === 200) {
                                     let code = response.body.code;
                                     if (code === 200) {
@@ -381,7 +386,7 @@
                 } else {
                     this.$refs['creatform'].validate((valid) => {
                         if (valid) {
-                            this.$http.post("http://localhost:9090/user/register", creat).then(response => {
+                            this.$http.post("/user/register", creat).then(response => {
                                 if (response.status === 200) {
                                     let code = response.body.code;
                                     if (code === 200) {
@@ -453,7 +458,7 @@
                         let row = deletets[i];
                         ids.push(row.id);
                     }
-                    this.$http.post("http://localhost:9090/user/deleteusers", JSON.stringify(ids)).then(response => {
+                    this.$http.post("/user/deleteusers", JSON.stringify(ids)).then(response => {
                         let code = response.body.code;
                         if (code === 200) {
                             this.getData();
@@ -486,7 +491,7 @@
                     let id = row.id
                     let ids = []
                     ids.push(id);
-                    this.$http.post("http://localhost:9090/user/deleteusers", JSON.stringify(ids)).then(response => {
+                    this.$http.post("/user/deleteusers", JSON.stringify(ids)).then(response => {
                         let code = response.body.code;
                         if (code === 200) {
                             this.$message({
@@ -515,7 +520,7 @@
                 let row = this.currentRow;
                 if (row) {
                     let id = row.id
-                    this.$http.post("http://localhost:9090/user/resetpassword",
+                    this.$http.post("/user/resetpassword",
                         {userid: id, password: "123456"}, {emulateJSON: true})
                         .then(response => {
                             let code = response.body.code;
@@ -556,7 +561,7 @@
                 this.$refs.remittanceform.validate((valid) => {
                     if (valid) {
                         console.log(this.remittanceform);
-                        this.$http.post("http://localhost:9090/amount/addamount", this.remittanceform)
+                        this.$http.post("/amount/addamount", this.remittanceform)
                             .then(response => {
                                 let code = response.body.code;
                                 if (code === 200) {

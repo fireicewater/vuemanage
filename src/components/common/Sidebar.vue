@@ -1,7 +1,7 @@
 <template>
     <div class="sidebar">
         <el-menu :default-active="onRoutes" class="el-menu-vertical-demo" theme="dark" unique-opened router>
-            <template v-for="item in items">
+            <template v-for="item in menu">
                 <template v-if="item.subs">
                     <el-submenu :index="item.index">
                         <template slot="title"><i :class="item.icon"></i>{{ item.title }}</template>
@@ -21,6 +21,7 @@
 </template>
 
 <script>
+    import auth from "../../auth"
     export default {
         data() {
             return {
@@ -30,7 +31,7 @@
                         index: 'home',
                         title: '首页'
                     },
-                    {
+                    auth.isadmin() && {
                         icon: 'el-icon-menu',
                         index: 'basetable',
                         title: 'admin',
@@ -46,6 +47,9 @@
         computed: {
             onRoutes() {
                 return this.$route.path.replace('/', '');
+            },
+            menu() {
+                return this.items.filter(router => router);
             }
         }
     }

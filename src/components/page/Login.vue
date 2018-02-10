@@ -19,6 +19,7 @@
 </template>
 
 <script>
+    import auth from '../../auth'
     export default {
         data: function () {
             return {
@@ -41,9 +42,7 @@
                 const self = this;
                 self.$refs[formName].validate((valid) => {
                     if (valid) {
-                        // localStorage.setItem('ms_username',self.ruleForm.username);
-                        //Todo ajax 后台登录
-                        self.$router.push('/home');
+                        auth.login(this, self.ruleForm);
                     } else {
                         console.log('error submit!!');
                         return false;
