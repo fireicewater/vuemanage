@@ -185,7 +185,7 @@
                 tableData: [],
                 //当前页
                 cur_page: 1,
-                count:0,
+                count: 0,
                 //多选数据
                 multipleSelection: [],
                 //是否显示新增表单
@@ -220,7 +220,7 @@
                     createtime: []
                 },
                 remittanceform: {
-                    id: "",
+                    userid: "",
                     amount: ""
                 },
                 remittanceformrules: {
@@ -307,13 +307,13 @@
             },
             getData() {
                 let self = this;
-                const param=this.searchform
+                const param = this.searchform
                 const creatime = param.createtime;
                 if (creatime.length > 0) {
                     param.mincreatetime = creatime[0];
                     param.maxcreatetime = creatime[1];
                 }
-                param.page=this.cur_page
+                param.page = this.cur_page
                 this.$http.post("http://localhost:9090/user/getuserlist", param).then(response => {
                     // success callback
                     if (response.status === 200) {
@@ -466,7 +466,6 @@
                         }
                         if (code === 500) {
                             this.$message.error('删除失败,请稍后重试');
-                            this.creatFormVisible = false;
                         }
                         if (code === 403) {
                             this.$message.error('没有选中用户进行删除');
@@ -498,7 +497,6 @@
                         }
                         if (code === 500) {
                             this.$message.error('删除失败,请稍后重试');
-                            this.creatFormVisible = false;
                         }
                         if (code === 403) {
                             this.$message.error('没有选中用户进行删除');
@@ -530,7 +528,6 @@
                             }
                             if (code === 500) {
                                 this.$message.error('重置失败,请稍后重试');
-                                this.creatFormVisible = false;
                             }
                             if (code === 403) {
                                 this.$message.error('没有选中用户重置');
@@ -548,24 +545,41 @@
             },
             remittanceFormcancel() {
                 this.remittanceform = {
-                    id: "",
+                    userid: "",
                     amount: ""
                 };
-                //TODO ajax表单
                 this.$refs.remittanceform.resetFields();
                 this.remittanceFormVisible = false;
             },
             remittanceFormconfirm() {
-
                 this.remittanceFormVisible = false;
-                // this.$refs[remittanceform].validate((valid) => {
-                //     if (valid) {
-                //         alert('submit!');
-                //     } else {
-                //         console.log('error submit!!');
-                //         return false;
-                //     }
-                // });
+                this.$refs.remittanceform.validate((valid) => {
+                    if (valid) {
+                        console.log(this.remittanceform);
+                        this.$http.post("http://localhost:9090/amount/addamount", this.remittanceform)
+                            .then(response => {
+                                const code = response.body.code;
+                                if (code === 200) {
+                                    this.$message({
+                                        message: '汇款成功',
+                                        type: 'success'
+                                    });
+                                }
+                                if (code === 500) {
+                                    this.$message.error('汇款失败,请稍后重试');
+                                    this.creatFormVisible = false;
+                                }
+                                if (code === 403) {
+                                    this.$message.error('没有选中用户汇款');
+                                }
+                            }, response => {
+                                this.$message.error("服务器错误请稍后再试");
+                            })
+                    } else {
+                        this.$message.error('校验未通过');
+                        return false;
+                    }
+                });
                 this.$message({
                     message: '汇款成功',
                     type: 'success'
@@ -574,8 +588,16 @@
             },
             remittance() {
                 const row = this.currentRow;
-                this.remittanceform.id = row.id;
-                this.remittanceFormVisible = true;
+                if (row) {
+                    this.remittanceform.userid = row.id;
+                    this.remittanceFormVisible = true;
+                }
+                else {
+                    this.$message({
+                        message: '请选择需要汇款的用户',
+                        type: 'warning'
+                    });
+                }
             },
             searchformdialog() {
                 this.searchformVisible = true;

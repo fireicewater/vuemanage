@@ -40,18 +40,19 @@
                         <el-input v-model="creatform.salesman"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" @click="">修改</el-button>
+                        <el-button type="primary" @click="onSubmit">修改</el-button>
                         <el-button type="primary" class="handle-del mr10" @click="changepassword">修改密码</el-button>
                     </el-form-item>
                 </el-form>
             </el-col>
             <el-col :span="12">
                 <el-table :data="remittancetable" style="width: 100%" :row-class-name="tableRowClassName">
-                    <el-table-column prop="date" label="日期" sortable></el-table-column>
+                    <el-table-column prop="createtime" label="日期" sortable :formatter="formatter">></el-table-column>
                     <el-table-column prop="amount" label="金额" sortable></el-table-column>
                     <el-table-column label="操作">
                         <template slot-scope="scope">
-                            <el-button size="mini" @click="confirmamount(scope.$index, scope.row)">
+                            <el-button size="mini" @click="confirmamount(scope.$index, scope.row)"
+                                       :disabled="scope.row.status">
                                 确认
                             </el-button>
                         </template>
@@ -83,6 +84,23 @@
 <script>
     export default {
         data: function () {
+            var validateoriginalpassword = (rule, value, callback) => {
+                this.$http.post("http://localhost:9090/user/validatpassword", {
+                    userid: this.userid,
+                    password: value
+                }, {emulateJSON: true})
+                    .then(response => {
+                        const code = response.body.code;
+                        if (code === 404) {
+                            callback(new Error('密码输入错误'));
+                        } else {
+                            callback();
+                        }
+                    }, response => {
+                        callback();
+                    })
+
+            };
             var validateNewpassword = (rule, value, callback) => {
                 const pasword = this.changpasswordform.password;
                 if (pasword == value) {
@@ -101,7 +119,7 @@
             };
             return {
                 creatform: {
-                    id: 564645664,
+                    id: null,
                     username: "",
                     password: "",
                     name: "",
@@ -155,6 +173,7 @@
                 changpasswordrules: {
                     password: [
                         {type: "string", required: true, message: '请输入原密码', trigger: 'blur'},
+                        {validator: validateoriginalpassword, trigger: 'blur'}
                     ],
                     newpassword: [
                         {type: "string", required: true, message: '请输入新密码', trigger: 'blur'},
@@ -166,13 +185,38 @@
                     ]
                 },
                 changePassowrdFormVisible: false,
-                remittancetable: []
+                remittancetable: [],
+                userid: 0
             }
         },
         methods: {
             onSubmit() {
+                this.$refs['creatform'].validate((valid) => {
+                    const creat = this.creatform;
+                    if (valid) {
+                        this.$http.put("http://localhost:9090/user/updateuser", creat).then(response => {
+                            if (response.status === 200) {
+                                const code = response.body.code;
+                                if (code === 200) {
+                                    this.$message.success('提交成功！');
+                                    this.getData();
+                                }
+                                if (code === 500) {
+                                    this.$message.error('修改失败,请稍后重试');
+                                }
+                                if (code === 403) {
+                                    this.$message.error('校验未通过');
+                                }
+                            }
+                        }, response => {
+                            this.$message.error("服务器错误请稍后再试");
+                        });
+                    } else {
+                        this.$message.error("校验未通过");
+                        return false;
+                    }
+                });
 
-                this.$message.success('提交成功！');
             },
             changepassword() {
                 this.changpasswordform = {};
@@ -185,36 +229,99 @@
                 this.changePassowrdFormVisible = false;
             },
             changpasswordconfirm() {
-                //TODO 后台提交
-                this.$message.success('修改成功！');
-                this.changePassowrdFormVisible = false;
+                this.$refs.changpasswordform.validate((valid) => {
+                    if (valid) {
+                        this.$http.post("http://localhost:9090/user/changpassword", this.changpasswordform)
+                            .then(response => {
+                                const code = response.body.code;
+                                if (code === 200) {
+                                    this.$message.success('修改成功！');
+                                    this.changePassowrdFormVisible = false;
+                                    this.$refs.changpasswordform.resetFields();
+                                    this.changpasswordform = {};
+                                }
+                                if (code === 500) {
+                                    this.$message.error('修改失败,请稍后重试');
+                                }
+                                if (code === 403) {
+                                    this.$message.error('校验未通过');
+                                }
+                            }, response => {
+                                this.$message.error("服务器错误请稍后再试");
+                            })
+                    } else {
+                        this.$message.error("校验未通过");
+                        return false;
+                    }
+                })
 
             },
             tableRowClassName(row, rowIndex) {
-                if (row.status === 1) {
+                if (row.status) {
                     return 'success-row';
                 }
                 return '';
             },
             confirmamount(index, row) {
-                this.message.success("确认金额成功");
-            }
+                const amount = row;
+                this.$http.put("http://localhost:9090/amount/updatestatus", amount)
+                    .then(response => {
+                        const code = response.body.code;
+                        if (code === 200) {
+                            this.$message.success('确认金额成功！');
+                            this.getAmountData();
+                        }
+                        if (code === 500) {
+                            this.$message.error('确认失败,请稍后重试');
+                        }
+                    }, response => {
+                        this.$message.error("服务器错误请稍后再试")
+                    });
+
+            },
+            getData() {
+                this.$http.get("http://localhost:9090/user/getuserinfo", {
+                    params: {
+                        userid: this.userid
+                    }
+                }).then(response => {
+                    const code = response.body.code;
+                    if (code === 200) {
+                        const userinfo = response.body.body;
+                        userinfo.sex = userinfo.sex.toString();
+                        this.creatform = userinfo;
+                    }
+                }, response => {
+
+                })
+            },
+            getAmountData() {
+                this.$http.get("http://localhost:9090/amount/getAmounts", {
+                    params: {
+                        userid: this.userid
+                    }
+                }).then(response => {
+                    const code = response.body.code;
+                    if (code === 200) {
+                        const remittancetable = response.body.body;
+                        this.remittancetable = remittancetable;
+                    }
+                }, response => {
+
+                })
+            },
+            formatter(row, column) {
+                const data = new Date(row.createtime);
+                var year = data.getFullYear();
+                var month = data.getMonth() + 1;
+                var date = data.getDate();
+                return [year, month, date].join('-');
+            },
         },
         created() {
-            this.remittancetable = [
-                {
-                    id: 1,
-                    date: "2017-10-1",
-                    amount: 100,
-                    status: 0
-                },
-                {
-                    id: 2,
-                    date: "2017-10-1",
-                    amount: 200,
-                    status: 1
-                }
-            ]
+            this.userid = 15
+            this.getData();
+            this.getAmountData();
         }
     }
 </script>
