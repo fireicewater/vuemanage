@@ -163,7 +163,7 @@
                 this.$http.get("http://localhost:9090/user/validateuser", {params: {username: value}})
                     .then(response => {
                         if (response.status === 200) {
-                            const code = response.body.code;
+                            let code = response.body.code;
                             if (code === 200) {
                                 callback(new Error('用户名已存在'));
                             } else {
@@ -291,9 +291,9 @@
             updateValue: function (value) {
                 console.log(value);
                 if (value) {
-                    const formattedValue = value.trim().slice(0, value.indexOf('.') === -1 ? value.length : value.indexOf('.') + 3)
+                    let formattedValue = value.trim().slice(0, value.indexOf('.') === -1 ? value.length : value.indexOf('.') + 3)
                     // 如果值尚不合规，则手动覆盖为合规的值
-                    const result = parseFloat(formattedValue).toFixed(2);
+                    let result = parseFloat(formattedValue).toFixed(2);
                     console.log(result)
                     if (!isNaN(result)) {
                         this.creatform.salesamount = result
@@ -307,8 +307,8 @@
             },
             getData() {
                 let self = this;
-                const param = this.searchform
-                const creatime = param.createtime;
+                let param = this.searchform
+                let creatime = param.createtime;
                 if (creatime.length > 0) {
                     param.mincreatetime = creatime[0];
                     param.maxcreatetime = creatime[1];
@@ -317,9 +317,9 @@
                 this.$http.post("http://localhost:9090/user/getuserlist", param).then(response => {
                     // success callback
                     if (response.status === 200) {
-                        const code = response.body.code;
+                        let code = response.body.code;
                         if (code === 200) {
-                            const data = response.body.body;
+                            let data = response.body.body;
                             this.tableData = [];
                             this.tableData = data.list;
                             this.cur_page = data.pageNum;
@@ -345,13 +345,13 @@
             },
             //新建用户确认
             createformconfirm() {
-                const creat = this.creatform
+                let creat = this.creatform
                 if (creat.id) {
                     this.$refs['creatform'].validate((valid) => {
                         if (valid) {
                             this.$http.put("http://localhost:9090/user/updateuser", creat).then(response => {
                                 if (response.status === 200) {
-                                    const code = response.body.code;
+                                    let code = response.body.code;
                                     if (code === 200) {
                                         this.$message({
                                             message: '修改成功',
@@ -383,7 +383,7 @@
                         if (valid) {
                             this.$http.post("http://localhost:9090/user/register", creat).then(response => {
                                 if (response.status === 200) {
-                                    const code = response.body.code;
+                                    let code = response.body.code;
                                     if (code === 200) {
                                         this.$message({
                                             message: '新增成功',
@@ -431,7 +431,7 @@
             },
             update() {
                 this.isupdate = true;
-                const row = this.currentRow;
+                let row = this.currentRow;
                 if (row) {
                     row.sex = row.sex.toString();
                     this.creatform = row;
@@ -446,7 +446,7 @@
                 // this.$message.error('修改失败,请稍后重试');
             },
             delAll() {
-                const deletets = this.multipleSelection;
+                let deletets = this.multipleSelection;
                 if (deletets.length > 0) {
                     let ids = [];
                     for (let i = 0; i < deletets.length; i++) {
@@ -454,7 +454,7 @@
                         ids.push(row.id);
                     }
                     this.$http.post("http://localhost:9090/user/deleteusers", JSON.stringify(ids)).then(response => {
-                        const code = response.body.code;
+                        let code = response.body.code;
                         if (code === 200) {
                             this.getData();
                             this.$message({
@@ -481,13 +481,13 @@
                 }
             },
             deleteuser() {
-                const row = this.currentRow;
+                let row = this.currentRow;
                 if (row) {
-                    const id = row.id
-                    const ids = []
+                    let id = row.id
+                    let ids = []
                     ids.push(id);
                     this.$http.post("http://localhost:9090/user/deleteusers", JSON.stringify(ids)).then(response => {
-                        const code = response.body.code;
+                        let code = response.body.code;
                         if (code === 200) {
                             this.$message({
                                 message: '删除成功',
@@ -512,13 +512,13 @@
                     });
                 }
             }, changpassword() {
-                const row = this.currentRow;
+                let row = this.currentRow;
                 if (row) {
-                    const id = row.id
+                    let id = row.id
                     this.$http.post("http://localhost:9090/user/resetpassword",
                         {userid: id, password: "123456"}, {emulateJSON: true})
                         .then(response => {
-                            const code = response.body.code;
+                            let code = response.body.code;
                             if (code === 200) {
                                 this.$message({
                                     message: '重置成功',
@@ -558,7 +558,7 @@
                         console.log(this.remittanceform);
                         this.$http.post("http://localhost:9090/amount/addamount", this.remittanceform)
                             .then(response => {
-                                const code = response.body.code;
+                                let code = response.body.code;
                                 if (code === 200) {
                                     this.$message({
                                         message: '汇款成功',
@@ -587,7 +587,7 @@
                 this.$message.error('汇款失败,请稍后重试');
             },
             remittance() {
-                const row = this.currentRow;
+                let row = this.currentRow;
                 if (row) {
                     this.remittanceform.userid = row.id;
                     this.remittanceFormVisible = true;
@@ -603,7 +603,7 @@
                 this.searchformVisible = true;
             },
             searchformconfirm() {
-                const searchform = this.searchform;
+                let searchform = this.searchform;
                 if (searchform.maxsalesamount !== "") {
                     searchform.maxsalesamount = parseFloat(searchform.maxsalesamount)
                 }
@@ -622,7 +622,7 @@
 
     function tofloat(value) {
         if (!value) return ''
-        const res = parseFloat(value)
+        let res = parseFloat(value)
         if (isNaN(res)) {
             return value;
         }

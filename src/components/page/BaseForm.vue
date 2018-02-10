@@ -90,7 +90,7 @@
                     password: value
                 }, {emulateJSON: true})
                     .then(response => {
-                        const code = response.body.code;
+                        let code = response.body.code;
                         if (code === 404) {
                             callback(new Error('密码输入错误'));
                         } else {
@@ -101,16 +101,16 @@
                     })
 
             };
-            var validateNewpassword = (rule, value, callback) => {
-                const pasword = this.changpasswordform.password;
+            const validateNewpassword = (rule, value, callback) => {
+                let pasword = this.changpasswordform.password;
                 if (pasword == value) {
                     callback(new Error('原密码不能和新密码一样'));
                 } else {
                     callback();
                 }
             };
-            var validaterepassword = (rule, value, callback) => {
-                const newpasword = this.changpasswordform.newpassword;
+            const validaterepassword = (rule, value, callback) => {
+                let newpasword = this.changpasswordform.newpassword;
                 if (newpasword != value) {
                     callback(new Error('两次输的密码必须一样'));
                 } else {
@@ -192,11 +192,11 @@
         methods: {
             onSubmit() {
                 this.$refs['creatform'].validate((valid) => {
-                    const creat = this.creatform;
+                    let creat = this.creatform;
                     if (valid) {
                         this.$http.put("http://localhost:9090/user/updateuser", creat).then(response => {
                             if (response.status === 200) {
-                                const code = response.body.code;
+                                let code = response.body.code;
                                 if (code === 200) {
                                     this.$message.success('提交成功！');
                                     this.getData();
@@ -220,7 +220,7 @@
             },
             changepassword() {
                 this.changpasswordform = {};
-                const id = this.creatform.id;
+                let id = this.creatform.id;
                 this.changpasswordform.id = id;
                 this.changePassowrdFormVisible = true;
             },
@@ -233,7 +233,7 @@
                     if (valid) {
                         this.$http.post("http://localhost:9090/user/changpassword", this.changpasswordform)
                             .then(response => {
-                                const code = response.body.code;
+                                let code = response.body.code;
                                 if (code === 200) {
                                     this.$message.success('修改成功！');
                                     this.changePassowrdFormVisible = false;
@@ -263,10 +263,10 @@
                 return '';
             },
             confirmamount(index, row) {
-                const amount = row;
+                let amount = row;
                 this.$http.put("http://localhost:9090/amount/updatestatus", amount)
                     .then(response => {
-                        const code = response.body.code;
+                        let code = response.body.code;
                         if (code === 200) {
                             this.$message.success('确认金额成功！');
                             this.getAmountData();
@@ -285,9 +285,9 @@
                         userid: this.userid
                     }
                 }).then(response => {
-                    const code = response.body.code;
+                    let code = response.body.code;
                     if (code === 200) {
-                        const userinfo = response.body.body;
+                        let userinfo = response.body.body;
                         userinfo.sex = userinfo.sex.toString();
                         this.creatform = userinfo;
                     }
@@ -301,9 +301,9 @@
                         userid: this.userid
                     }
                 }).then(response => {
-                    const code = response.body.code;
+                    let code = response.body.code;
                     if (code === 200) {
-                        const remittancetable = response.body.body;
+                        let remittancetable = response.body.body;
                         this.remittancetable = remittancetable;
                     }
                 }, response => {
@@ -311,7 +311,7 @@
                 })
             },
             formatter(row, column) {
-                const data = new Date(row.createtime);
+                let data = new Date(row.createtime);
                 var year = data.getFullYear();
                 var month = data.getMonth() + 1;
                 var date = data.getDate();
