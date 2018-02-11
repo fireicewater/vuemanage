@@ -177,7 +177,6 @@
                         }
                     }, response => {
                         if (response.status === 404) {
-                            console.log("404")
                         }
                     });
             };
@@ -294,12 +293,10 @@
                 this.currentRow = val;
             },
             updateValue: function (value) {
-                console.log(value);
                 if (value) {
                     let formattedValue = value.trim().slice(0, value.indexOf('.') === -1 ? value.length : value.indexOf('.') + 3)
                     // 如果值尚不合规，则手动覆盖为合规的值
                     let result = parseFloat(formattedValue).toFixed(2);
-                    console.log(result)
                     if (!isNaN(result)) {
                         this.creatform.salesamount = result
                     }
@@ -560,7 +557,6 @@
                 this.remittanceFormVisible = false;
                 this.$refs.remittanceform.validate((valid) => {
                     if (valid) {
-                        console.log(this.remittanceform);
                         this.$http.post("/amount/addamount", this.remittanceform)
                             .then(response => {
                                 let code = response.body.code;

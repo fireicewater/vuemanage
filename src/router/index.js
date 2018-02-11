@@ -42,7 +42,6 @@ const routes = [
 function getroutes() {
     let home = routes[1];
     let homechildren = home.children;
-    console.log(routes);
     homechildren = homechildren.filter(router => router);
     home.children = homechildren;
     routes[1] = home;

@@ -291,7 +291,7 @@
                     if (code === 200) {
                         let userinfo = response.body.body;
                         userinfo.sex = userinfo.sex.toString();
-                        userinfo.salesamount = parseFloat(userinfo.salesamount);
+                        userinfo.salesamount = userinfo.salesamount.toString();
                         this.creatform = userinfo;
                     }
                 }, response => {

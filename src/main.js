@@ -16,7 +16,8 @@ Vue.prototype.$axios = axios;
 const LOGIN_PATH = '/manager/login';
 
 function authInterceptor(to, from, next) {
-    if (auth.checkAuth()) {
+    auth.checkAuth();
+    if (auth.authenticated) {
         switch (to.path) {
             case LOGIN_PATH:
                 next('/manager/home');
@@ -35,7 +36,7 @@ function authInterceptor(to, from, next) {
     }
 }
 
-// router.beforeEach(authInterceptor);
+router.beforeEach(authInterceptor);
 new Vue({
     router,
     render: h => h(App)
