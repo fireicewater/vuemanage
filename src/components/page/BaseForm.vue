@@ -83,6 +83,7 @@
 
 <script>
     import auth from "../../auth"
+
     export default {
         data: function () {
             var validateoriginalpassword = (rule, value, callback) => {
@@ -290,6 +291,7 @@
                     if (code === 200) {
                         let userinfo = response.body.body;
                         userinfo.sex = userinfo.sex.toString();
+                        userinfo.salesamount = parseFloat(userinfo.salesamount);
                         this.creatform = userinfo;
                     }
                 }, response => {

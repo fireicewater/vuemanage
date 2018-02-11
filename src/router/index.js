@@ -9,8 +9,6 @@ import Login from "../components/page/Login.vue"
 
 
 
-
-
 Vue.use(Router);
 const routes = [
     {
