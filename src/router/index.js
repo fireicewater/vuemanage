@@ -24,11 +24,11 @@ const routes = [
                 component: HomePage
             },
             auth.isadmin() && {
-                path: '/manager/basetable',
+                path: '/manager/userstable',
                 component: BaseTable
             },
             {
-                path: '/manager/baseform',
+                path: '/manager/usersform',
                 component: BaseForm
             }
         ]

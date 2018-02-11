@@ -360,9 +360,9 @@
                                             type: 'success'
                                         });
                                         this.getData();
+                                        this.creatFormVisible = false;
                                         this.$refs.creatform.resetFields();
                                         this.creatform = {};
-                                        this.creatFormVisible = false;
                                     }
                                     if (code === 500) {
                                         this.$message.error('修改失败,请稍后重试');
@@ -436,6 +436,7 @@
                 let row = this.currentRow;
                 if (row) {
                     row.sex = row.sex.toString();
+                    row.salesamount = row.salesamount.toString();
                     this.creatform = row;
                     this.creatFormVisible = true;
                 } else {

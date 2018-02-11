@@ -47,7 +47,7 @@
 
 <style scoped>
     .center {
-        width: 900px;
+        width: 100%;
         margin-left: auto;
         margin-right: auto;
     }

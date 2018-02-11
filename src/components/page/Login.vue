@@ -58,6 +58,7 @@
         position: relative;
         width: 100%;
         height: 100%;
+        background-image: url("../../assets/login_bg.jpg");
     }
 
     .ms-title {

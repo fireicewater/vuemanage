@@ -33,12 +33,12 @@
                     },
                     auth.isadmin() && {
                         icon: 'el-icon-menu',
-                        index: 'basetable',
+                        index: 'userstable',
                         title: 'admin',
                     },
                     {
                         icon: 'el-icon-date',
-                        index: 'baseform',
+                        index: 'usersform',
                         title: '个人信息',
                     }
                 ]
