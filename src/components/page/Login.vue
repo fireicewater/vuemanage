@@ -55,10 +55,11 @@
 
 <style scoped>
     .login-wrap {
-        position: relative;
-        width: 100%;
-        height: 100%;
         background-image: url("../../assets/login_bg.jpg");
+        background-attachment: fixed;height:100%;
+        width:100%;
+        overflow: hidden;
+        background-size:cover;
     }
 
     .ms-title {
@@ -74,9 +75,9 @@
 
     .ms-login {
         position: absolute;
-        left: 50%;
+        left: 47%;
         top: 50%;
-        width: 300px;
+        width: 400px;
         height: 160px;
         margin: -150px 0 0 -190px;
         padding: 40px;
