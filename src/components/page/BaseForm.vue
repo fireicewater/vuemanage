@@ -42,6 +42,7 @@
                     <el-form-item>
                         <el-button type="primary" @click="onSubmit">修改</el-button>
                         <el-button type="primary" class="handle-del mr10" @click="changepassword">修改密码</el-button>
+                        <el-button type="primary" class="handle-del mr10" @click="referrerbottom">销售情况</el-button>
                     </el-form-item>
                 </el-form>
             </el-col>
@@ -77,6 +78,12 @@
                 <el-button @click="changpasswordcancel">取 消</el-button>
                 <el-button type="primary" @click="changpasswordconfirm">确 定</el-button>
             </div>
+        </el-dialog>
+        <el-dialog title="销售分成" :visible.sync="referrervisable">
+            <el-table :data="refertable" style="width: 100%">
+                <el-table-column prop="username" label="用户名"></el-table-column>
+                <el-table-column prop="salesamount" label="金额"></el-table-column>
+            </el-table>
         </el-dialog>
     </div>
 </template>
@@ -133,12 +140,14 @@
                     salesamount: '',
                     salesman: ""
                 },
+                referrervisable: false,
                 changpasswordform: {
                     id: null,
                     password: "",
                     newpassword: "",
                     repassword: ""
                 },
+                refertable: [],
                 createformrules: {
                     name: [
                         {type: "string", required: true, message: '请输入姓名', trigger: 'blur'},
@@ -320,9 +329,27 @@
                 var date = data.getDate();
                 return [year, month, date].join('-');
             },
+            referrerbottom() {
+                console.log(this.creatform.username);
+                this.$http.get("/user/getreferrer", {
+                    params: {
+                        username: this.creatform.username
+                    }
+                }).then(response => {
+                    let code = response.body.code;
+                    if (code === 200) {
+                        let referrs = response.body.body;
+                        this.refertable = referrs;
+                        this.referrervisable = true;
+                    }
+                }, response => {
+
+                })
+            }
         },
         created() {
             this.userid = sessionStorage.getItem('userid');
+            // this.userid = 5;
             this.getData();
             this.getAmountData();
         },
